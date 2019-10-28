@@ -232,4 +232,4 @@ def cp(times, compfirst):
             g.draw(g.bs)
 
 if __name__ == "__main__":
-    cp(5000, False)
+    cp(5000, True)
