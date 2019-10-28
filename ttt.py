@@ -6,7 +6,7 @@ class Game:
         self.bs = [[0, 0, 0],
                    [0, 0, 0],
                    [0, 0, 0]]
-        self.turn = -1
+        self.turn = 0
         self.end = None
         self.trace = []
 
@@ -83,8 +83,8 @@ class Game:
             print("MOVE ALREADY PLAYED")
             return
 
-        if self.turn % 2 == 1: sign =  1
-        else:                  sign = -1
+        if self.turn % 2 == 1: sign = -1
+        else:                  sign =  1
 
         self.bs[y][x] = sign
         self.trace.append(deepcopy(self.bs))
@@ -242,8 +242,11 @@ class AI:
 
 #use this to play with computer, technically program ended        
 def cp(times, compfirst):
-    #there's little difference beyond 1000
-    if times < 1000 or times == 10000:
+    #there's little to no
+
+
+    difference beyond 1000
+    if times < 1000:
         test_dummy = AI([0.5]*7)
         test_dummy.learn(times)
         weights = test_dummy.weights
