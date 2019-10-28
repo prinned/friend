@@ -13,7 +13,7 @@ class Game:
     @staticmethod
     def draw(bs):
         for i in [0,1,2]:
-            print(i,'|',sep='',end='')
+            print(i+1,'|',sep='',end='')
             for j in [0,1,2]:
                 if bs[i][j] == -1:  text = 'O'
                 elif bs[i][j] == 0: text = ' '
@@ -21,13 +21,59 @@ class Game:
 
                 print(text,'|',sep='',end='')
             print()
-        print("  0 1 2 \n")
+        print("  A B C ")
                 
         print()
         
     def inverted(self):
         return [[i*-1 for i in j] for j in self.bs]
 
+    def human_play(self, space):
+        help_message = '''
++---------------------------------------------------------------+
+|Move should be entered as such:                                |
+|                                                               |
+|     1|X| | |                                                  |
+|     2| | | |                                                  |
+|     3| | | |                                                  |
+|       A B C                                                   |
+|                                                               |
+|In order to play 'X' like in the diagram, enter A and 1: 'A1'. |
+|Note that the order or the capitalization does not matter.     |
+|'a1', '1A' or '1a' are all valid.                              |
++---------------------------------------------------------------+
+'''
+        if (space.lower().strip() == 'h'
+        or  space.lower().strip() == 'help'):
+            print(help_message)
+            return False
+        if (space.lower().strip() == 'd'
+        or  space.lower().strip() == 'draw'):
+            Game.draw(self.bs)
+            return False
+        if (space.lower().strip() == 'c'
+        or  space.lower().strip() == 'close'):
+            exit()
+            print("You shouldn't be seeing this")
+            return False
+
+        if space[0].isalpha(): alph_pos = 0
+        else :                 alph_pos = 1
+
+        try:
+            y = int(space[alph_pos-1]) - 1
+
+            x = {'a' : 0,
+                 'b' : 1,
+                 'c' : 2}[space[alph_pos]]
+        except (TypeError, KeyError, ValueError):
+            print("\nINCORRECT SYNTAX")
+            print(help_message)
+            return False
+            
+        return self.play(y, x)
+        
+    
     def play(self, y,x):
         if self.end != None:
             print("BOARD ALREADEY ENDED")
@@ -44,7 +90,7 @@ class Game:
         self.trace.append(deepcopy(self.bs))
         self.turn+=1
 
-        if Game.checkwin(self.bs, sign) == True:
+        if Game.checkwin(self.bs, sign):
             self.end = sign
 
         draw = True
@@ -53,6 +99,8 @@ class Game:
                 if self.bs[i][j] == 0: draw = False
         if draw:
             self.end = 0
+
+        return True
 
     @staticmethod
     def diagnols(board):
@@ -190,12 +238,12 @@ class AI:
         for i in range(7):
             print('Weight', i, '-', self.weights[i])
         print(self.weights)
-#------------------------------- THE PROGRAM ENDED THE REST DOESNT COUNT----------------
+#-------------------- THE REAL PROGRAM ENDED THE REST DOESNT COUNT----------------------
 
 #use this to play with computer, technically program ended        
 def cp(times, compfirst):
     #there's little difference beyond 1000
-    if times < 1000 or times > 5000:
+    if times < 1000 or times == 10000:
         test_dummy = AI([0.5]*7)
         test_dummy.learn(times)
         weights = test_dummy.weights
@@ -203,33 +251,36 @@ def cp(times, compfirst):
         weights = [-3.2264838459777887, 43.18300301725494, -85.52920153592079, 15.988065375567771, -13.19102458628005, 10.84259560908655, -10.979917281961045]
     elif times == 5000:
         weights = [-3.224194903566711, 42.70469876546411, -84.98978105070327, 17.7741356970466, -15.459463405606419, 8.675499829889187, -8.463629301028567]
-    elif times == -5000:
-        weights = [1.3410638946117552, -92.37846313528837, -8.648843426955215, -1.0362706074550727, 0.04611568975271118, 0.3216494217844299, -6.832248037914471]
-    g = Game()
-    ai2 = AI(weights)
+    elif times == 10000:
+        weights = [-3.2264838459777887, 43.18300301725494, -85.52920153592079, 15.988065375567771, -13.19102458628005, 10.84259560908655, -10.979917281961045]
 
+    g = Game()
+    ai = AI(weights)
+
+    print("Enter 'h' or 'help' for help")
+    print("Enter 'd' or 'draw' to redraw the board")
+    print("Enter 'e' or 'exit' to close the program,\nor press Ctrl-Z, Ctrl-C or Ctrl-D.\n")
     Game.draw(g.bs)
     if compfirst:
+        print("You are O")
         while g.end == None:
-            g.play(ai2.move(g.bs,1)[0],ai2.move(g.bs,1)[1])
+            g.play(ai.move(g.bs,1)[0],ai.move(g.bs,1)[1])
             g.draw(g.bs)
             if g.end != None: break
 
-            x = int(input("X: "))
-            y = int(input("Y: "))
-            g.play(y, x)
-            Game.draw(g.bs)
+            if not g.human_play(input("Move: ")):continue
+            if g.end != None: Game.draw(g.bs)
     else:
+        print("You are X")
         while g.end == None:
-            x = int(input("X: "))
-            y = int(input("Y: "))
-            g.play(y, x)
-            Game.draw(g.bs)
-            if g.end != None: break
+            if not g.human_play(input("Move: ")):continue
+            print()
+            if g.end != None:
+                Game.draw(g.bs)
+                break
 
-            
-            g.play(ai2.move(g.bs,1)[0],ai2.move(g.bs,1)[1])
+            g.play(ai.move(g.bs,1)[0],ai.move(g.bs,1)[1])
             g.draw(g.bs)
 
 if __name__ == "__main__":
-    cp(5000, True)
+    cp(10000, False)
