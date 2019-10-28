@@ -242,10 +242,7 @@ class AI:
 
 #use this to play with computer, technically program ended        
 def cp(times, compfirst):
-    #there's little to no
-
-
-    difference beyond 1000
+    #there's little to no difference beyond 1000
     if times < 1000:
         test_dummy = AI([0.5]*7)
         test_dummy.learn(times)
