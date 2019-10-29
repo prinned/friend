@@ -56,17 +56,16 @@ class Game:
             exit()
             print("You shouldn't be seeing this")
             return False
-
-        if space[0].isalpha(): alph_pos = 0
-        else :                 alph_pos = 1
-
         try:
+            if space[0].isalpha(): alph_pos = 0
+            else :                 alph_pos = 1
+
             y = int(space[alph_pos-1]) - 1
 
             x = {'a' : 0,
                  'b' : 1,
                  'c' : 2}[space[alph_pos]]
-        except (TypeError, KeyError, ValueError):
+        except (TypeError, KeyError, ValueError, IndexError):
             print("\nINCORRECT SYNTAX")
             print(help_message)
             return False
@@ -77,11 +76,11 @@ class Game:
     def play(self, y,x):
         if self.end != None:
             print("BOARD ALREADEY ENDED")
-            return
+            return False
 
         if self.bs[y][x] != 0:
             print("MOVE ALREADY PLAYED")
-            return
+            return False
 
         if self.turn % 2 == 1: sign = -1
         else:                  sign =  1
@@ -268,12 +267,13 @@ def cp(times, compfirst):
             g.draw(g.bs)
             if g.end != None: break
 
-            if not g.human_play(input("Move: ")):continue
+            while True:
+                if g.human_play(input("Move: ")): break
             if g.end != None: Game.draw(g.bs)
     else:
         print("You are X")
         while g.end == None:
-            if not g.human_play(input("Move: ")):continue
+            if g.human_play(input("Move: ")) == False: continue
             print()
             if g.end != None:
                 Game.draw(g.bs)
