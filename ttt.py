@@ -1,29 +1,31 @@
+#!/usr/bin/env python3
 from copy import deepcopy, copy
 import random
+import numpy as np
+from tc2 import Network
+
 
 class Game:
     def __init__(self):
-        self.bs = [[0, 0, 0],
-                   [0, 0, 0],
-                   [0, 0, 0]]
+        self.bs = [0, 0, 0,
+                   0, 0, 0,
+                   0, 0, 0]
         self.turn = 0
         self.end = None
         self.trace = []
 
     @staticmethod
     def draw(bs):
-        for i in [0,1,2]:
-            print(i+1,'|',sep='',end='')
-            for j in [0,1,2]:
-                if bs[i][j] == -1:  text = 'O'
-                elif bs[i][j] == 0: text = ' '
-                elif bs[i][j] == 1: text = 'X'
-
-                print(text,'|',sep='',end='')
-            print()
-        print("  A B C ")
+        text = ''
+        for i in range(len(bs)):
+            if bs[i] == 1:      sym = 'X'
+            elif bs[i] == 0:    sym = ' '
+            elif bs[i] == -1:   sym = 'O'
+            text += "|" + sym
+            if i % 3 == 2:
+                print(text)
+                text = ''
                 
-        print()
         
     def inverted(self):
         return [[i*-1 for i in j] for j in self.bs]
@@ -123,13 +125,15 @@ class Game:
         return False
         
 class AI:
-    def __init__(self, weights = [.5]*7):
-        self.weights = weights
+    def __init__(self, ni, nh, no):
+        self.k = 2
+        self.nn = Network(ni, nh, no)
+
     #-------------- making val and move----------------------
-    @staticmethod
+    '''
     def xs(board, sign):
         xs = [1,0,0,0,0,0,0] #x0 is 1 so it wont affect the constant weight
-        '''
+        \'''
         x0 = always 1 so it doesnt affect w0 (just to make func simpler)
         x1 = X win
         x2 = O win
@@ -137,7 +141,7 @@ class AI:
         x4 = 2 O's in a line and open square
         x5 = 1 X in empty line
         x6 = 1 O in empty line
-        '''
+        \'''
         for j in [Game.rows(board), Game.cols(board), Game.diagnols(board)]:
             for i in j:
                 if sum(i) ==  3*sign: xs[1] += 1
@@ -151,39 +155,26 @@ class AI:
                 if(sum(i) == -sign
                 and 0 in i):          xs[6] += 1
         return xs
-    
+    '''
     def value(self, board, sign): 
-        val = 0
-        for (weight,x) in zip(self.weights, AI.xs(board, sign)):
-            val += weight*x
-        return val
+        return self.nn.forward(np.array(board) * sign)[0]
 
-    def value_xs(self, xs): 
-        val = 0
-        for (weight,x) in zip(self.weights, xs):
-            val += weight*x
-        return val 
 
     def move(self, board, sign):
         spaces = []
-        for y in [0,1,2]:
-            for x in [0,1,2]:
-                if board[y][x] == 0: spaces.append([y,x])
+        for i in range(9): 
+            if board[i] == 0: spaces.append(i)
+        #random.choices(population, weights=None, *, cum_weights=None, k=1)
         
-        val_list = []
-        for (y,x) in spaces:
-            bcopy = deepcopy(board)
-            bcopy[y][x] = sign
-            val_list.append([ [y,x] , self.value(bcopy, sign) ])
-
-        best_val   = 0
-        best_space = spaces[0]
-        for val in val_list:
-            if val[1] > best_val: 
-                best_space = val[0]
-                best_val   = val[1]
-
-        return best_space
+        weights = []
+        for s in spaces:
+            bcopy = board.copy()
+            bcopy[s] = sign
+            val =  self.value(bcopy, sign)
+            weights.append(self.k**val)
+            print(weights)
+        chosen_space = random.choices(spaces, weights, k =1)[0]
+        return chosen_space
     
     #-------------- making the rest----------------------   
     def perf_system(self):
@@ -191,13 +182,13 @@ class AI:
 
         while g.end == None:
             move = self.move(g.bs, 1)
-            g.play(move[0], move[1])
+            g.bs[move] = 1
             if g.end != None: break
 
             move = self.move(g.bs, -1)
-            g.play(move[0], move[1])
+            g.bs[move] = -1
         return g.trace
-
+'''
     def critic(self, trace):        
         examples = []
 
@@ -237,8 +228,9 @@ class AI:
         for i in range(7):
             print('Weight', i, '-', self.weights[i])
         print(self.weights)
+'''
 #-------------------- THE REAL PROGRAM ENDED THE REST DOESNT COUNT----------------------
-
+'''
 #use this to play with computer, technically program ended        
 def cp(times, compfirst):
     #there's little to no difference beyond 1000
@@ -284,3 +276,16 @@ def cp(times, compfirst):
 
 if __name__ == "__main__":
     cp(10000, False)
+'''
+
+
+
+
+
+
+
+
+
+
+a = AI(9, 2, 1)
+print(a.perf_system())
